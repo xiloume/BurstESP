@@ -15,7 +15,7 @@ from sot_hack import SoTMemoryReader
 # See explanation in Main, toggle for a non-graphical debug
 DEBUG = False
 
-# Pyglet clock used to track time via FPS
+# Pyglet clock used to track time via FPSs
 clock = pyglet.clock.Clock()
 
 
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # Create an overlay window with Pyglet at the same size as our SoT Window
     window = pyglet.window.Window(SOT_WINDOW_W, SOT_WINDOW_H,
                                   vsync=False, style='overlay', config=config,
-                                  caption="DougTheDruid's ESP Framework")
+                                  caption="BurstESP")
     hwnd = window._hwnd  # pylint: disable=protected-access
 
     # Move our window to the same location that our SoT Window is at
