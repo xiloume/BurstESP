@@ -101,6 +101,8 @@ if __name__ == '__main__':
         # main_batch.draw()
         smr.main_batch.draw()
         fps_display.draw()
+        player_count.draw()
+        crew_list.draw()
 
     # We schedule an "update all" to scan all actors every 5seconds
     pyglet.clock.schedule_interval(update_all, 5)
