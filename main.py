@@ -17,7 +17,7 @@ from sot_hack import SoTMemoryReader
 # See explanation in Main, toggle for a non-graphical debug
 DEBUG = False
 
-# Pyglet clock used to track time via FPSs
+# Pyglet clock used to track time via FPS
 clock = pyglet.clock.Clock()
 
 
