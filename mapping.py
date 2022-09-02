@@ -21,10 +21,10 @@ ships = {
     },
 
     "BP_LargeShipTemplate_C": {
-        "Name": "Galleon (Near)",
+        "Name": "Gallion (Near)",
     },
     "BP_LargeShipNetProxy_C": {
-        "Name": "Galleon",
+        "Name": "Gallion",
     },
 
     "BP_AISmallShipTemplate_C": {
@@ -45,3 +45,26 @@ ships = {
 }
 
 ship_keys = set(ships.keys())
+worldevent = {
+    # ------------ EVENT  ------------
+    "BP_SkellyFort_RitualSkullCloud_C": {
+        "Name": "fort des damnés Event",
+    },
+    "BP_LegendSkellyFort_SkullCloud_C": {
+        "Name": "Fort of Fortune Event",
+    },
+    "BP_GhostShips_Signal_Flameheart_NetProxy_C": {
+        "Name": "Ghost Fleet Event",
+    },
+    "BP_SkellyFort_SkullCloud_C": {
+        "Name": "Skeleton Fort Event",
+    },
+    "BP_SkellyShip_ShipCloud_C": {
+        "Name": "Skeleton Fleet Event",
+    },
+    "BP_AshenLord_SkullCloud_C": {
+        "Name": "Ashen Lord Event",
+    }
+}
+
+worldevent_keys = set(worldevent.keys())
