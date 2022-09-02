@@ -40,7 +40,7 @@ class Crews(DisplayObject):
 
         # Collect and store information about the crews on the server
         self.crew_info = self._get_crews_info()
-
+        print(self.crew_info)
         # Sum all of the crew sizes into our total_players variable
         self.total_players = sum(crew['size'] for crew in self.crew_info)
 
@@ -60,8 +60,7 @@ class Crews(DisplayObject):
             # We store all of the crews in a tracker dictionary. This allows us
             # to assign each crew a "Short"-ID based on count on the server.
             short_id = crew_tracker.get(self.crew_info[x]['guid'], None)
-            output += f" Crew #{short_id} - {self.crew_info[x]['size']} Pirates\n"
-
+            output += f" Equipe {short_id} - {self.crew_info[x]['size']} Pirates\n"
         return output
 
     def _get_crews_info(self):
