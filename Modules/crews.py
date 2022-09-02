@@ -40,7 +40,7 @@ class Crews(DisplayObject):
 
         # Collect and store information about the crews on the server
         self.crew_info = self._get_crews_info()
-        print(self.crew_info)
+
         # Sum all of the crew sizes into our total_players variable
         self.total_players = sum(crew['size'] for crew in self.crew_info)
 
@@ -66,13 +66,12 @@ class Crews(DisplayObject):
     def _get_crews_info(self):
         # Find the starting address for our Crews TArray
         crew_raw = self.rm.read_bytes(self.address + OFFSETS.get('CrewService.Crews'), 16)
-
+        print()
         # (Crews_Data<Array>, Crews length, Crews max)
         crews = struct.unpack("<Qii", crew_raw)
 
         # Will contain all of our condensed Crew Data
         crews_data = []
-
         # For each crew on the server
         for x in range(0, crews[1]):
             # Each crew has a unique ID composed of four ints, maybe be useful if you
@@ -96,6 +95,7 @@ class Crews(DisplayObject):
                     "size": crew[1]
                 }
                 crews_data.append(crew_data)
+                print(crew_data)
                 if crew_guid not in crew_tracker:
                     crew_tracker[crew_guid] = len(crew_tracker)+1
         return crews_data
