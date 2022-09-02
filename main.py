@@ -3,8 +3,10 @@
 @Source https://github.com/DougTheDruid/SoT-ESP-Framework
 For community support, please contact me on Discord: DougTheDruid#2784
 """
+from audioop import cross
 import base64
 import pyglet
+from test import test
 # pyglet.options['debug_graphics_batch'] = True
 pyglet.options['debug_gl'] = False
 from pyglet.text import Label
@@ -94,15 +96,26 @@ if __name__ == '__main__':
         window.clear()
 
         # Update our player count Label & crew list
-        player_count.text = f"Player Count: {smr.crew_data.total_players}"
+        try:
+            player_count.text = f"Player Count: {smr.crew_data.total_players}"
+            cross.text = f"."
+            crew_list.text = smr.crew_data.crew_str
+        except:
+            print("Player count failed")
         # crew_list.text = smr.crew_data.crew_str
 
         # Draw our main batch & FPS counter at the bottom left
         # main_batch.draw()
         smr.main_batch.draw()
         fps_display.draw()
-        player_count.draw()
-        crew_list.draw()
+        try:
+            player_count.draw()
+            cross.draw()
+            crew_list.draw()
+            #worldevent.draw()
+        except:
+            print("crewlist failed")
+    
 
     # We schedule an "update all" to scan all actors every 5seconds
     pyglet.clock.schedule_interval(update_all, 5)
@@ -124,16 +137,20 @@ if __name__ == '__main__':
     player_count = Label("Player Count: {}",
                          x=SOT_WINDOW_W * 0.85,
                          y=SOT_WINDOW_H * 0.9, batch=smr.main_batch)
+    cross = Label("o",
+                         x=SOT_WINDOW_W * 0.5,
+                         y=SOT_WINDOW_H * 0.484, batch=smr.main_batch)
 
     # The label for showing all players on the server under the count
     # This purely INITIALIZES it does not inherently update automatically
     # if False:  # pylint: disable=using-constant-test
-    crew_list = Label(f"{smr.crew_data.crew_str}", x=SOT_WINDOW_W * 0.85,
-                      y=(SOT_WINDOW_H-25) * 0.9, batch=smr.main_batch, width=300,
-                      multiline=True)
-        # Note: The width of 300 is the max pixel width of a single line
-        # before auto-wrapping the text to the next line. Updated in on_draw()
-
+    try:
+        crew_list = Label(f"{smr.crew_data.crew_str}", x=SOT_WINDOW_W * 0.85,
+            y=(SOT_WINDOW_H-25) * 0.9, batch=smr.main_batch, width=300,
+            multiline=True)
+    except:
+        print("crewlist failed")
+        
     # Runs our application and starts to use our scheduled events to show data
     pyglet.app.run()
     # Note - ***Nothing past here will execute as app.run() is a loop***

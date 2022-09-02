@@ -48,8 +48,8 @@ class worldevent(DisplayObject):
         self.my_coords = my_coords
         self.raw_name = raw_name
         self.batch = batch
-
-        # Generate our Ship's info
+        print(actor_id)
+        # Generate our worldevent's info
         self.name = worldevent.get(self.raw_name).get("Name")
         self.coords = self._coord_builder(self.actor_root_comp_ptr,
                                           self.coord_offset)
@@ -132,17 +132,9 @@ class worldevent(DisplayObject):
         self.screen_coords = object_to_screen(self.my_coords, self.coords)
 
         if self.screen_coords:
-            # worldevent have two actors dependant on distance. This switches them
-            # seamlessly at 1750m
-            if "Near" in self.name and new_distance > 1750:
-                self.icon.visible = False
-                self.text_render.visible = False
-            elif "Near" not in self.name and new_distance < 1750:
-                self.icon.visible = False
-                self.text_render.visible = False
-            else:
-                self.icon.visible = True
-                self.text_render.visible = True
+            
+            self.icon.visible = True
+            self.text_render.visible = True
 
             # Update the position of our circle and text
             self.icon.position = (self.screen_coords[0], self.screen_coords[1])

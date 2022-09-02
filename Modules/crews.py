@@ -66,10 +66,8 @@ class Crews(DisplayObject):
     def _get_crews_info(self):
         # Find the starting address for our Crews TArray
         crew_raw = self.rm.read_bytes(self.address + OFFSETS.get('CrewService.Crews'), 16)
-        print()
         # (Crews_Data<Array>, Crews length, Crews max)
         crews = struct.unpack("<Qii", crew_raw)
-
         # Will contain all of our condensed Crew Data
         crews_data = []
         # For each crew on the server
@@ -87,7 +85,7 @@ class Crews(DisplayObject):
 
             # Players<Array>, current length, max length
             crew = struct.unpack("<Qii", crew_raw)
-
+            #print(crew)
             # If our crew has more than 0 people on it, we care about it, so we add it to our tracker
             if crew[1] > 0:
                 crew_data = {
@@ -95,7 +93,7 @@ class Crews(DisplayObject):
                     "size": crew[1]
                 }
                 crews_data.append(crew_data)
-                print(crew_data)
+                #print(crew_data)
                 if crew_guid not in crew_tracker:
                     crew_tracker[crew_guid] = len(crew_tracker)+1
         return crews_data

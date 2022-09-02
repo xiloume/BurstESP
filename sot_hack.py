@@ -8,8 +8,10 @@ import struct
 import logging
 from memory_helper import ReadMemory
 from mapping import ship_keys
+from mapping import worldevent_keys
 from helpers import OFFSETS, CONFIG, logger, re_init_main_batch
 from Modules.ship import Ship
+from Modules.worldevent import worldevent
 from Modules.crews import Crews
 from pyglet.graphics import Batch
 
@@ -198,6 +200,14 @@ class SoTMemoryReader:
                 #     continue
                 # else:
                 self.display_objects.append(ship)
+            
+            # If we have worldevent ESP enabled in helpers.py, and the name of the
+            # actor is in our mapping.py ship_keys object, interpret the actor
+            # as a ship
+            elif CONFIG.get('WORLDEVENT_ENABLED') and raw_name in worldevent_keys:
+                Worldevent = worldevent(self.rm, actor_id, actor_address, self.my_coords,
+                            raw_name, self.main_batch)
+                self.display_objects.append(Worldevent)
 
             # If we have the crews data enabled in helpers.py and the name
             # of the actor is CrewService, we create a class based on that Crew

@@ -39,16 +39,11 @@ ships = {
     "BP_AILargeShipNetProxy_C": {
         "Name": "Skeleton Galleon",
     },
-    # "BP_AggressiveGhostShip_C": {
-    #     "Name": "Flameheart Galleon",
-    # },  # To implement, must modify ship.py's update method for visibility
-}
-
-ship_keys = set(ships.keys())
-worldevent = {
-    # ------------ EVENT  ------------
+    "BP_Projectile_CannonBall_C": {
+        "name" : "projectile",
+    },
     "BP_SkellyFort_RitualSkullCloud_C": {
-        "Name": "fort des damnés Event",
+        "Name": "fort des damnes Event",
     },
     "BP_LegendSkellyFort_SkullCloud_C": {
         "Name": "Fort of Fortune Event",
@@ -64,7 +59,42 @@ worldevent = {
     },
     "BP_AshenLord_SkullCloud_C": {
         "Name": "Ashen Lord Event",
+    },
+    "BP_Projectile_CannonBall_C": {
+        "name" : "projectil",
     }
+    
+    # "BP_AggressiveGhostShip_C": {
+    #     "Name": "Flameheart Galleon",
+    # },  # To implement, must modify ship.py's update method for visibility
 }
+
+ship_keys = set(ships.keys())
+
+worldevent = {
+    # ------------ EVENT  ------------
+    "BP_SkellyFort_RitualSkullCloud_C": {
+        "Name": "fort des damnes Event",
+    },
+    "BP_LegendSkellyFort_SkullCloud_C": {
+        "Name": "Fort of Fortune Event",
+    },
+    "BP_GhostShips_Signal_Flameheart_NetProxy_C": {
+        "Name": "Ghost Fleet Event",
+    },
+    "BP_SkellyFort_SkullCloud_C": {
+        "Name": "Skeleton Fort Event",
+    },
+    "BP_SkellyShip_ShipCloud_C": {
+        "Name": "Skeleton Fleet Event",
+    },
+    "BP_AshenLord_SkullCloud_C": {
+        "Name": "Ashen Lord Event",
+    },
+    "BP_Projectile_CannonBall_C": {
+        "name" : "projectil",
+    }   
+    }    
+
 
 worldevent_keys = set(worldevent.keys())
