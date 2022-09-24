@@ -8,7 +8,7 @@ from vlabel import VLabel
 from pyglet.shapes import Circle
 from helpers import calculate_distance, object_to_screen, \
      TEXT_OFFSET_X, TEXT_OFFSET_Y
-from mapping import worldevent
+from mapping import worldeventMap
 from Modules.display_object import DisplayObject
 
 WORLDEVENT_COLOR = (100, 0, 0)  # The color we want the indicator circle to be
@@ -48,9 +48,9 @@ class worldevent(DisplayObject):
         self.my_coords = my_coords
         self.raw_name = raw_name
         self.batch = batch
-        print(actor_id)
+
         # Generate our worldevent's info
-        self.name = worldevent.get(self.raw_name).get("Name")
+        self.name = worldeventMap.get(self.raw_name).get("Name")
         self.coords = self._coord_builder(self.actor_root_comp_ptr,
                                           self.coord_offset)
         self.distance = calculate_distance(self.coords, self.my_coords)

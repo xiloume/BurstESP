@@ -137,7 +137,7 @@ if __name__ == '__main__':
     player_count = Label("Player Count: {}",
                          x=SOT_WINDOW_W * 0.85,
                          y=SOT_WINDOW_H * 0.9, batch=smr.main_batch)
-    cross = Label("o",
+    cross = Label("O",
                          x=SOT_WINDOW_W * 0.5,
                          y=SOT_WINDOW_H * 0.484, batch=smr.main_batch)
 
