@@ -3,6 +3,8 @@
   "CrewService.Crews": 1184,
   "Crew.Players": 32,
   "Crew.Size": 152,
+  "Crew.CrewSessionTemplate": 48,
+  "CrewSessionTemplate.CrewMaxPlayer": 48,
   "Actor.rootComponent": 360,
   "CameraCacheEntry.MinimalViewInfo": 16,
   "GameInstance.LocalPlayers": 56,

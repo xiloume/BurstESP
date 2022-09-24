@@ -34,10 +34,10 @@ ships = {
         "Name": "Skeleton Sloop",
     },
     "BP_AILargeShipTemplate_C": {
-        "Name": "Skeleton Galleon (Near)",
+        "Name": "Skeleton Gallion (Near)",
     },
     "BP_AILargeShipNetProxy_C": {
-        "Name": "Skeleton Galleon",
+        "Name": "Skeleton Gallion",
     }
     
     # "BP_AggressiveGhostShip_C": {

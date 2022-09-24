@@ -5,6 +5,7 @@
 
 from helpers import *
 import struct
+from mapping import ships
 from Modules.display_object import DisplayObject
 from helpers import crew_tracker
 
@@ -13,6 +14,10 @@ class Crews(DisplayObject):
     """
     Class to generate information about the crews current on our server
     """
+    # basic color
+    #crew_color = (255, 255, 255, 255)
+    # table of color values
+    color_tab = [(255, 0, 0, 255), (0, 255, 0, 255), (0, 0, 255, 255), (128, 0, 127, 255), (0, 128, 127, 255)]
 
     def __init__(self, memory_reader, actor_id, address):
         """
@@ -37,6 +42,7 @@ class Crews(DisplayObject):
         self.rm = memory_reader
         self.actor_id = actor_id
         self.address = address
+        self.crew_color = (255, 0, 0, 255)
 
         # Collect and store information about the crews on the server
         self.crew_info = self._get_crews_info()
@@ -57,11 +63,22 @@ class Crews(DisplayObject):
         """
         output = ""
         for x in range(len(self.crew_info)):
+            
             # We store all of the crews in a tracker dictionary. This allows us
             # to assign each crew a "Short"-ID based on count on the server.
             short_id = crew_tracker.get(self.crew_info[x]['guid'], None)
-            output += f" Equipe {short_id} - {self.crew_info[x]['size']} Pirates\n"
+            output += f"{self.crew_info[x]['crewlabel']}{short_id}:{self.crew_info[x]['size']} Pirates\n"
         return output
+    #return a different color for a crew
+    def _get_color(self, len, color):
+        """
+        Returns the color for the crew
+        """
+        print(color)
+        if self.color_tab[len] != color:
+                self.crew_color = self.color_tab[len]
+        return self.crew_color
+
 
     def _get_crews_info(self):
         # Find the starting address for our Crews TArray
@@ -82,18 +99,33 @@ class Crews(DisplayObject):
             crew_raw = self.rm.read_bytes(
                 crews[0] + OFFSETS.get('Crew.Players') + (OFFSETS.get('Crew.Size') * x), 16
             )
+            # read the ship data
+            crew_max_players = self.rm.read_int(crews[0] + OFFSETS.get('Crew.Size') * x + OFFSETS.get('Crew.CrewSessionTemplate') + OFFSETS.get('CrewSessionTemplate.CrewMaxPlayer'))
+            #crew_max_players = struct.unpack("<i", crew_max_players)
+            #crew_session = struct.unpack("<iiiiiiiiiiiiii", crewsession)
+            #crew_ship = self.rm.read_bytes(crew_session + OFFSETS.get('Crew.CrewMaxPlayer'), 4)
 
             # Players<Array>, current length, max length
             crew = struct.unpack("<Qii", crew_raw)
-            #print(crew)
+
+            if crew_max_players == 2:
+                crewlabel = "sloop "
+            elif crew_max_players == 3:
+                crewlabel = "brig   "
+            else:
+                crewlabel = "galion"
+            #print(crew_guid[0], crewlabel)
             # If our crew has more than 0 people on it, we care about it, so we add it to our tracker
+            color = self._get_color(x, self.crew_color)
             if crew[1] > 0:
                 crew_data = {
                     "guid": crew_guid,
-                    "size": crew[1]
+                    "size": crew[1],
+                    "crewlabel": crewlabel,
+                    "color": color
                 }
                 crews_data.append(crew_data)
-                #print(crew_data)
+                
                 if crew_guid not in crew_tracker:
                     crew_tracker[crew_guid] = len(crew_tracker)+1
         return crews_data

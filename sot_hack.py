@@ -147,17 +147,15 @@ class SoTMemoryReader:
         Then our main game loop updates those objects
         """
         # On a full run, start by cleaning up all the existing text renders
-        # re_init_main_batch()
-        # main_batch = Batch()
-        # for display_ob in self.display_objects:
-        #     try:
-        #         display_ob.text_render.delete()
-        #     except:
-        #         continue
-        #     try:
-        #         display_ob.icon.delete()
-        #     except:
-        #         continue
+        re_init_main_batch()
+        for display_ob in self.display_objects:
+            try:
+                display_ob.text_render.delete()
+            except:
+                try:
+                    display_ob.icon.delete()
+                except:
+                    continue
         self.main_batch = Batch()
         self.display_objects = []
         self.update_my_coords()
@@ -202,8 +200,8 @@ class SoTMemoryReader:
                 self.display_objects.append(ship)
             
             # If we have worldevent ESP enabled in helpers.py, and the name of the
-            # actor is in our mapping.py ship_keys object, interpret the actor
-            # as a ship
+            # actor is in our mapping.py worldevent_keys object, interpret the actor
+            # as a worldevent
             elif CONFIG.get('WORLDEVENT_ENABLED') and raw_name in worldevent_keys:
                 Worldevent = worldevent(self.rm, actor_id, actor_address, self.my_coords,
                             raw_name, self.main_batch)

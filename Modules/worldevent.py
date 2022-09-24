@@ -11,13 +11,13 @@ from helpers import calculate_distance, object_to_screen, \
 from mapping import worldeventMap
 from Modules.display_object import DisplayObject
 
-WORLDEVENT_COLOR = (100, 0, 0)  # The color we want the indicator circle to be
-CIRCLE_SIZE = 10  # The size of the indicator circle we want
+WORLDEVENT_COLOR = (100, 255, 0)  # The color we want the indicator circle to be
+CIRCLE_SIZE = 5  # The size of the indicator circle we want
 
 
 class worldevent(DisplayObject):
     """
-    Class to generate information for a ship object in memory
+    Class to generate information for a worldevent object in memory
     """
 
     def __init__(self, memory_reader, actor_id, address, my_coords, raw_name, batch):
@@ -30,7 +30,7 @@ class worldevent(DisplayObject):
         "raw" name to a more readable name per our Mappings. We also create
         a circle and label and add it to our batch for display to the screen.
 
-        All of this data represents a "Ship". If you want to add more, you will
+        All of this data represents a "worldevent". If you want to add more, you will
         need to add another class variable under __init__ and in the update()
         function
 
@@ -78,14 +78,14 @@ class worldevent(DisplayObject):
             return Circle(self.screen_coords[0], self.screen_coords[1],
                           CIRCLE_SIZE, color=self.color, batch=self.batch)
 
-        return Circle(0, 0, 10, color=self.color, batch=self.batch)
+        return Circle(0, 0, CIRCLE_SIZE, color=self.color, batch=self.batch)
 
     def _built_text_string(self) -> str:
         """
         Generates a string used for rendering. Separate function in the event
         you need to add more data (Sunk %, hole count, etc)
         """
-        return f"{self.name} - {self.distance}m"
+        return f"{self.distance}m:{self.name}"
 
     def _build_text_render(self) -> Label:
         """
@@ -95,19 +95,19 @@ class worldevent(DisplayObject):
         Assigns the object to our batch & group
 
         :rtype: Label
-        :return: What text we want displayed next to the ship
+        :return: What text we want displayed next to the worldevent
         """
         if self.screen_coords:
             return VLabel(self.text_str,
                           x=self.screen_coords[0] + TEXT_OFFSET_X,
                           y=self.screen_coords[1] + TEXT_OFFSET_Y,
-                          batch=self.batch)
+                          batch=self.batch, font_name ='Times New Roman', font_size=10)
 
-        return VLabel(self.text_str, x=0, y=0, batch=self.batch)
+        return VLabel(self.text_str, x=0, y=0, batch=self.batch, font_name ='Times New Roman', font_size=10)
 
     def update(self, my_coords: dict):
         """
-        A generic method to update all the interesting data about a ship
+        A generic method to update all the interesting data about a worldevent
         object, to be called when seeking to perform an update on the
         Actor without doing a full-scan of all actors in the game.
 

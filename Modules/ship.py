@@ -78,14 +78,14 @@ class Ship(DisplayObject):
             return Circle(self.screen_coords[0], self.screen_coords[1],
                           CIRCLE_SIZE, color=self.color, batch=self.batch)
 
-        return Circle(0, 0, 10, color=self.color, batch=self.batch)
+        return Circle(0, 0, CIRCLE_SIZE, color=self.color, batch=self.batch)
 
     def _built_text_string(self) -> str:
         """
         Generates a string used for rendering. Separate function in the event
         you need to add more data (Sunk %, hole count, etc)
         """
-        return f"{self.name} - {self.distance}m"
+        return f"{self.distance}m:{self.name}"
 
     def _build_text_render(self) -> Label:
         """
@@ -101,9 +101,10 @@ class Ship(DisplayObject):
             return VLabel(self.text_str,
                           x=self.screen_coords[0] + TEXT_OFFSET_X,
                           y=self.screen_coords[1] + TEXT_OFFSET_Y,
+                          font_name ='Times New Roman', font_size=10,
                           batch=self.batch)
 
-        return VLabel(self.text_str, x=0, y=0, batch=self.batch)
+        return VLabel(self.text_str, x=0, y=0, batch=self.batch, font_name ='Times New Roman', font_size=10)
 
     def update(self, my_coords: dict):
         """

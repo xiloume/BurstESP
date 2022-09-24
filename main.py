@@ -5,8 +5,10 @@ For community support, please contact me on Discord: DougTheDruid#2784
 """
 from audioop import cross
 import base64
+import colorsys
 import pyglet
-from test import test
+from Modules.crews import Crews
+from helpers import CONFIG
 # pyglet.options['debug_graphics_batch'] = True
 pyglet.options['debug_gl'] = False
 from pyglet.text import Label
@@ -86,6 +88,38 @@ if __name__ == '__main__':
     # Move our window to the same location that our SoT Window is at
     window.set_location(SOT_WINDOW[0], SOT_WINDOW[1])
 
+    # Fenetre de parametres
+    #labelconf = pyglet.text.Label('GeeeksforGeeks',
+    #                      font_name ='Times New Roman',
+    #                      font_size = 36,
+    #                      x = window.width//2, y = window.height//2,
+    #                      anchor_x ='center', anchor_y ='center')
+    #windowconfig = pyglet.window.Window(500, 500, "Geeksforgeeks")
+    # key press event   
+    @window.event
+    def on_key_press(symbol, modifier):
+        
+        # key "C" get press
+        if symbol == pyglet.window.key.C and CONFIG.get('SHIPS_ENABLED') == True:
+            # open the window
+            d1 = {"CREWS_ENABLED": False}
+            CONFIG.update(d1)
+        elif symbol == pyglet.window.key.C and CONFIG.get('SHIPS_ENABLED') == False:
+            # close the window
+            d1 = {"CREWS_ENABLED": True}
+            CONFIG.update(d1)
+
+    #@windowconfig.event
+    #def on_draw():
+
+    #    windowconfig.clear()
+    #    labelconf.draw()
+
+
+    def reset_actors():
+        smr = SoTMemoryReader()
+        smr.read_actors()
+
     @window.event
     def on_draw():
         """
@@ -94,25 +128,24 @@ if __name__ == '__main__':
         draws both our batch (think of a canvas) & fps display
         """
         window.clear()
-
+        #Crews.update(smr.my_coords)
         # Update our player count Label & crew list
+        cross.text = f"+"
         try:
-            player_count.text = f"Player Count: {smr.crew_data.total_players}"
-            cross.text = f"."
+            #player_count.text = f"Player Count: {smr.crew_data.total_players}"
             crew_list.text = smr.crew_data.crew_str
         except:
+            reset_actors()
             print("Player count failed")
-        # crew_list.text = smr.crew_data.crew_str
 
         # Draw our main batch & FPS counter at the bottom left
         # main_batch.draw()
         smr.main_batch.draw()
         fps_display.draw()
         try:
-            player_count.draw()
+            #player_count.draw()
             cross.draw()
             crew_list.draw()
-            #worldevent.draw()
         except:
             print("crewlist failed")
     
@@ -134,23 +167,26 @@ if __name__ == '__main__':
 
     # Our base player_count label in the top-right of our screen. Updated
     # in on_draw()
-    player_count = Label("Player Count: {}",
-                         x=SOT_WINDOW_W * 0.85,
-                         y=SOT_WINDOW_H * 0.9, batch=smr.main_batch)
-    cross = Label("O",
-                         x=SOT_WINDOW_W * 0.5,
-                         y=SOT_WINDOW_H * 0.484, batch=smr.main_batch)
+    #player_count = Label("Player Count: {}",
+    #                     font_name ='Times New Roman',
+    #                     x=SOT_WINDOW_W * 0.85,
+    #                     y=SOT_WINDOW_H * 0.9, batch=smr.main_batch)
+    cross = Label("{}",
+                         font_name ='Source Sans Pro Black',
+                         x=SOT_WINDOW_W * 0.497,
+                         y=SOT_WINDOW_H * 0.482, batch=smr.main_batch, font_size=16)
+    cross.bold = True
+    cross.color = (255, 0, 0, 255)
 
     # The label for showing all players on the server under the count
     # This purely INITIALIZES it does not inherently update automatically
     # if False:  # pylint: disable=using-constant-test
     try:
-        crew_list = Label(f"{smr.crew_data.crew_str}", x=SOT_WINDOW_W * 0.85,
+        crew_list = Label(f"{smr.crew_data.crew_str}", x=SOT_WINDOW_W * 0.02,
             y=(SOT_WINDOW_H-25) * 0.9, batch=smr.main_batch, width=300,
-            multiline=True)
+            multiline=True, font_name ='Times New Roman', font_size=10, bold=False, color=(255, 255, 255, 255)) #{smr.crew_data.crew_color}
     except:
         print("crewlist failed")
-        
     # Runs our application and starts to use our scheduled events to show data
     pyglet.app.run()
     # Note - ***Nothing past here will execute as app.run() is a loop***
