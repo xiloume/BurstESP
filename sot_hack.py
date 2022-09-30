@@ -6,12 +6,15 @@ For community support, please contact me on Discord: DougTheDruid#2784
 
 import struct
 import logging
+from pynput import keyboard
+from Modules.hotkey import hotkey
 from memory_helper import ReadMemory
-from mapping import ship_keys
-from mapping import worldevent_keys
+from mapping import *
 from helpers import OFFSETS, CONFIG, logger, re_init_main_batch
 from Modules.ship import Ship
+from Modules.Chest import Chest
 from Modules.worldevent import worldevent
+from Modules.Player import Player as Playerclass
 from Modules.crews import Crews
 from pyglet.graphics import Batch
 
@@ -76,6 +79,19 @@ class SoTMemoryReader:
         self.display_objects = []
         self.crew_data = None
         self.main_batch = Batch()
+        self.keyboard_listener = keyboard.Listener(on_press=self.keypress, on_release=self.keyrelease)
+        self.keyboard_listener.start()
+        self.hotkey = hotkey()
+
+    def keypress(self, key):
+        self.hotkey._on_press(key)
+    
+    def keyrelease(self, key):
+        self.hotkey._on_release(key)
+        if key == keyboard.Key.f2:
+            self.crew_data.update()
+
+            
 
 
     def _load_local_player(self) -> int:
@@ -147,7 +163,7 @@ class SoTMemoryReader:
         Then our main game loop updates those objects
         """
         # On a full run, start by cleaning up all the existing text renders
-        re_init_main_batch()
+        #re_init_main_batch()
         for display_ob in self.display_objects:
             try:
                 display_ob.text_render.delete()
@@ -159,6 +175,7 @@ class SoTMemoryReader:
         self.main_batch = Batch()
         self.display_objects = []
         self.update_my_coords()
+        print(self.my_coords['cam_y'])
 
         actor_raw = self.rm.read_bytes(self.u_level + 0xa0, 0xC)
         actor_data = struct.unpack("<Qi", actor_raw)
@@ -187,11 +204,23 @@ class SoTMemoryReader:
             # Ignore anything we cannot find a name for
             if not raw_name:
                 continue
+            # If we have the crews data enabled in helpers.py and the name
+            # of the actor is CrewService, we create a class based on that Crew
+            # data to generate information about people on the server
+            # NOTE: This will NOT give us information on nearby players for the
+            # sake of ESP
+            if raw_name == "CrewService":
+                self.crew_data = Crews(self.rm, actor_id, actor_address, self.main_batch)
+
+            elif raw_name in Player_keys:
+                Playerr = Playerclass(self.rm, actor_id, actor_address, self.my_coords,
+                            raw_name, self.main_batch, self.crew_data)
+                self.display_objects.append(Playerr)
 
             # If we have Ship ESP enabled in helpers.py, and the name of the
             # actor is in our mapping.py ship_keys object, interpret the actor
             # as a ship
-            if CONFIG.get('SHIPS_ENABLED') and raw_name in ship_keys:
+            elif raw_name in ship_keys:
                 ship = Ship(self.rm, actor_id, actor_address, self.my_coords,
                             raw_name, self.main_batch)
                 # if "Near" not in ship.name and ship.distance < 1720:
@@ -202,15 +231,16 @@ class SoTMemoryReader:
             # If we have worldevent ESP enabled in helpers.py, and the name of the
             # actor is in our mapping.py worldevent_keys object, interpret the actor
             # as a worldevent
-            elif CONFIG.get('WORLDEVENT_ENABLED') and raw_name in worldevent_keys:
+            elif raw_name in worldevent_keys:
                 Worldevent = worldevent(self.rm, actor_id, actor_address, self.my_coords,
                             raw_name, self.main_batch)
                 self.display_objects.append(Worldevent)
-
-            # If we have the crews data enabled in helpers.py and the name
-            # of the actor is CrewService, we create a class based on that Crew
-            # data to generate information about people on the server
-            # NOTE: This will NOT give us information on nearby players for the
-            # sake of ESP
-            elif CONFIG.get('CREWS_ENABLED') and raw_name == "CrewService":
-                self.crew_data = Crews(self.rm, actor_id, actor_address)
+                
+            # If we have Chest ESP enabled in helpers.py, and the name of the
+            # actor is in our mapping.py Chest_keys object, interpret the actor
+            # as a Chest
+            elif raw_name in Chest_keys:
+                Chestt = Chest(self.rm, actor_id, actor_address, self.my_coords,
+                            raw_name, self.main_batch)
+                self.display_objects.append(Chestt)
+    

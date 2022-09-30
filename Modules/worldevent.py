@@ -6,7 +6,7 @@
 from pyglet.text import Label
 from vlabel import VLabel
 from pyglet.shapes import Circle
-from helpers import calculate_distance, object_to_screen, \
+from helpers import CONFIG, calculate_distance, object_to_screen, \
      TEXT_OFFSET_X, TEXT_OFFSET_Y
 from mapping import worldeventMap
 from Modules.display_object import DisplayObject
@@ -123,6 +123,13 @@ class worldevent(DisplayObject):
             self.icon.delete()
             self.text_render.delete()
             return
+        if CONFIG.get("WORLDEVENT_ENABLED") == False:
+            self.icon.visible = False
+            self.text_render.visible = False
+            return
+        else:
+            self.icon.visible = True
+            self.text_render.visible = True
 
         self.my_coords = my_coords
         self.coords = self._coord_builder(self.actor_root_comp_ptr,

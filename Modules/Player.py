@@ -3,24 +3,27 @@
 @Source https://github.com/DougTheDruid/SoT-ESP-Framework
 """
 
+from itertools import count
+import struct
 from pyglet.text import Label
 from vlabel import VLabel
-from pyglet.shapes import Circle
-from helpers import CONFIG, calculate_distance, object_to_screen, \
+from pyglet.shapes import Rectangle
+from helpers import CONFIG, OFFSETS, calculate_distance, object_to_screen, \
      TEXT_OFFSET_X, TEXT_OFFSET_Y
-from mapping import ships
+from mapping import Player as PlayerM
 from Modules.display_object import DisplayObject
 
-SHIP_COLOR = (100, 0, 0)  # The color we want the indicator circle to be
-CIRCLE_SIZE = 5  # The size of the indicator circle we want
+RECTANGLE_SIZEX = 5
+RECTANGLE_SIZEY = 5
+RECTANGLE_COLOR = (255, 0, 0)
 
 
-class Ship(DisplayObject):
+class Player(DisplayObject):
     """
-    Class to generate information for a ship object in memory
+    Class to generate information for a Player object in memory
     """
 
-    def __init__(self, memory_reader, actor_id, address, my_coords, raw_name, batch):
+    def __init__(self, memory_reader, actor_id, address, my_coords, raw_name, batch, crew_data):
         """
         Upon initialization of this class, we immediately initialize the
         DisplayObject parent class as well (to utilize common methods)
@@ -30,7 +33,7 @@ class Ship(DisplayObject):
         "raw" name to a more readable name per our Mappings. We also create
         a circle and label and add it to our batch for display to the screen.
 
-        All of this data represents a "Ship". If you want to add more, you will
+        All of this data represents a "Player". If you want to add more, you will
         need to add another class variable under __init__ and in the update()
         function
 
@@ -48,9 +51,15 @@ class Ship(DisplayObject):
         self.my_coords = my_coords
         self.raw_name = raw_name
         self.batch = batch
-
-        # Generate our Ship's info
-        self.name = ships.get(self.raw_name).get("Name")
+        self.crew_data = crew_data
+        self.playerinfo = self._get_player_info()
+        self.color = RECTANGLE_COLOR
+        # Generate our Player's info
+        try:
+            self.name = self.playerinfo["name"]
+            self.id = self.playerinfo["id"]
+        except:
+            self.name = PlayerM.get(self.raw_name).get("Name")
         self.coords = self._coord_builder(self.actor_root_comp_ptr,
                                           self.coord_offset)
         self.distance = calculate_distance(self.coords, self.my_coords)
@@ -58,34 +67,33 @@ class Ship(DisplayObject):
         self.screen_coords = object_to_screen(self.my_coords, self.coords)
 
         # All of our actual display information & rendering
-        self.color = SHIP_COLOR
         self.text_str = self._built_text_string()
         self.text_render = self._build_text_render()
         self.text_render.visible = False
-        self.icon = self._build_circle_render()
+        self.icon = self._build_Rectangle_render()
         self.icon.visible = False
 
         # Used to track if the display object needs to be removed
         self.to_delete = False
 
-    def _build_circle_render(self) -> Circle:
+    def _build_Rectangle_render(self) -> Rectangle:
         """
         Creates a circle located at the screen coordinates (if they exist).
         Uses the color specified in our globals w/ a size of 10px radius.
         Assigns the object to our batch & group
         """
         if self.screen_coords:
-            return Circle(self.screen_coords[0], self.screen_coords[1],
-                          CIRCLE_SIZE, color=self.color, batch=self.batch)
+            return Rectangle(self.screen_coords[0], self.screen_coords[1],
+                          RECTANGLE_SIZEX, RECTANGLE_SIZEY, color=self.color, batch=self.batch)
 
-        return Circle(0, 0, CIRCLE_SIZE, color=self.color, batch=self.batch)
+        return Rectangle(0, 0, RECTANGLE_SIZEX, RECTANGLE_SIZEY, color=self.color, batch=self.batch)
 
     def _built_text_string(self) -> str:
         """
         Generates a string used for rendering. Separate function in the event
         you need to add more data (Sunk %, hole count, etc)
         """
-        return f"{self.distance}m:{self.name}"
+        return f"{self.name}[{self.distance}m] {self.id}"
 
     def _build_text_render(self) -> Label:
         """
@@ -95,7 +103,7 @@ class Ship(DisplayObject):
         Assigns the object to our batch & group
 
         :rtype: Label
-        :return: What text we want displayed next to the ship
+        :return: What text we want displayed next to the Player
         """
         if self.screen_coords:
             return VLabel(self.text_str,
@@ -106,9 +114,40 @@ class Ship(DisplayObject):
 
         return VLabel(self.text_str, x=0, y=0, batch=self.batch, font_name ='Times New Roman', font_size=10)
 
+    def _get_player_info(self):
+        Player_data = []
+        
+        #pawn = self.rm.read_ptr(self.player_controller + OFFSETS.get('PlayerController.Pawn'))
+        #playerstate = self.rm.read_ptr(pawn + OFFSETS.get('Pawn.PlayerState'))
+        #name = self.rm.read_name_string(playerstate + OFFSETS.get('PlayerState.PlayerName'))
+        playerbyte = self.rm.read_bytes(self.address + OFFSETS.get('PlayerState.PlayerName'), 16)
+        player = struct.unpack("<QQ", playerbyte)
+        PlayerId = self.rm.read_int(self.address + OFFSETS.get('AthenaPlayerState.PlayerId'))
+        name = self.rm.read_name_string(player[0], 16) + self.rm.read_name_string(player[1], 16)
+        try:
+            for y in range(0, len(self.crew_data.crew_info)):
+                var = self.crew_data.crew_info[y]["player"]
+                for x in range(0, self.crew_data.crew_info[y]["size"]):
+                    playercrew = self.rm.read_ptr(var + OFFSETS.get('Crew.Players'))
+                    playercontroller = self.rm.read_ptr(playercrew + 48)
+                    playerpawn = self.rm.read_ptr(playercontroller + 1080)
+                    PlayerState = self.rm.read_ptr(playerpawn + 1000)
+                    crewplayerid = self.rm.read_int(PlayerState + OFFSETS.get('AthenaPlayerState.PlayerId'))
+                    if crewplayerid == PlayerId:
+                        self.color = self.crew_data.crew_info[y]["color"]
+                        print(self.color)
+        except Exception as e:
+            print(e)
+        #PlayerId = self.rm.read_int(playerstate + OFFSETS.get('PlayerState.PlayerId'))
+        Player_data = {
+            "id": PlayerId,
+            "name": name
+        }
+        return Player_data
+
     def update(self, my_coords: dict):
         """
-        A generic method to update all the interesting data about a ship
+        A generic method to update all the interesting data about a Player
         object, to be called when seeking to perform an update on the
         Actor without doing a full-scan of all actors in the game.
 
@@ -124,30 +163,20 @@ class Ship(DisplayObject):
             self.icon.delete()
             self.text_render.delete()
             return
-        if CONFIG.get("SHIPS_ENABLED") == False:
-            self.icon.visible = False
-            self.text_render.visible = False
-            return
-        else:
-            self.icon.visible = True
-            self.text_render.visible = True
 
         self.my_coords = my_coords
+        self.playerinfo = self._get_player_info()
         self.coords = self._coord_builder(self.actor_root_comp_ptr,
                                           self.coord_offset)
         new_distance = calculate_distance(self.coords, self.my_coords)
 
         self.screen_coords = object_to_screen(self.my_coords, self.coords)
 
-        if self.screen_coords:
-            # Ships have two actors dependant on distance. This switches them
-            # seamlessly at 1750m
-            if "Near" in self.name and new_distance > 1750:
+        if self.screen_coords and new_distance >= 0 and new_distance < 200:
+            if CONFIG.get("PLAYER_ENABLED") == False:
                 self.icon.visible = False
                 self.text_render.visible = False
-            elif "Near" not in self.name and new_distance < 1750:
-                self.icon.visible = False
-                self.text_render.visible = False
+                return
             else:
                 self.icon.visible = True
                 self.text_render.visible = True

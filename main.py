@@ -7,6 +7,8 @@ from audioop import cross
 import base64
 import colorsys
 import pyglet
+import win32gui
+from Modules.hotkey import hotkey
 from Modules.crews import Crews
 from helpers import CONFIG
 # pyglet.options['debug_graphics_batch'] = True
@@ -24,7 +26,6 @@ DEBUG = False
 # Pyglet clock used to track time via FPS
 clock = pyglet.clock.Clock()
 
-
 def update_all(_):
     """
     Triggers an entire read_actors call in our SoT Memory Reader. Will
@@ -32,6 +33,7 @@ def update_all(_):
     or render distance.
     """
     smr.read_actors()
+
 
 
 def load_graphics(_):
@@ -62,7 +64,7 @@ def load_graphics(_):
 
 
 if __name__ == '__main__':
-    logger.info(base64.b64decode("RG91Z1RoZURydWlkJ3MgRVNQIEZyYW1ld29yayBTdGFydGluZw==").decode("utf-8"))
+    logger.info(base64.b64decode("QnVyc3RFU1AgRnJhbWV3b3JrIFN0YXJ0aW5n").decode("utf-8"))
     logger.info(f"Hack Version: {version}")
 
     # Initialize our SoT Hack object, and do a first run of reading actors
@@ -88,38 +90,6 @@ if __name__ == '__main__':
     # Move our window to the same location that our SoT Window is at
     window.set_location(SOT_WINDOW[0], SOT_WINDOW[1])
 
-    # Fenetre de parametres
-    #labelconf = pyglet.text.Label('GeeeksforGeeks',
-    #                      font_name ='Times New Roman',
-    #                      font_size = 36,
-    #                      x = window.width//2, y = window.height//2,
-    #                      anchor_x ='center', anchor_y ='center')
-    #windowconfig = pyglet.window.Window(500, 500, "Geeksforgeeks")
-    # key press event   
-    @window.event
-    def on_key_press(symbol, modifier):
-        
-        # key "C" get press
-        if symbol == pyglet.window.key.C and CONFIG.get('SHIPS_ENABLED') == True:
-            # open the window
-            d1 = {"CREWS_ENABLED": False}
-            CONFIG.update(d1)
-        elif symbol == pyglet.window.key.C and CONFIG.get('SHIPS_ENABLED') == False:
-            # close the window
-            d1 = {"CREWS_ENABLED": True}
-            CONFIG.update(d1)
-
-    #@windowconfig.event
-    #def on_draw():
-
-    #    windowconfig.clear()
-    #    labelconf.draw()
-
-
-    def reset_actors():
-        smr = SoTMemoryReader()
-        smr.read_actors()
-
     @window.event
     def on_draw():
         """
@@ -131,28 +101,24 @@ if __name__ == '__main__':
         #Crews.update(smr.my_coords)
         # Update our player count Label & crew list
         cross.text = f"+"
-        try:
             #player_count.text = f"Player Count: {smr.crew_data.total_players}"
-            crew_list.text = smr.crew_data.crew_str
-        except:
-            reset_actors()
-            print("Player count failed")
+            #crew_list.text = smr.crew_data.crew_str
+
 
         # Draw our main batch & FPS counter at the bottom left
         # main_batch.draw()
-        smr.main_batch.draw()
-        fps_display.draw()
         try:
+            smr.main_batch.draw()
+            fps_display.draw()
             #player_count.draw()
             cross.draw()
-            crew_list.draw()
+            #crew_list.draw()
         except:
-            print("crewlist failed")
-    
+            print("drawing failed")
+            smr.read_actors()
 
     # We schedule an "update all" to scan all actors every 5seconds
     pyglet.clock.schedule_interval(update_all, 5)
-
     # We schedule a check to make sure the game is still running every 3 seconds
     pyglet.clock.schedule_interval(smr.rm.check_process_is_active, 3)
 
@@ -181,12 +147,12 @@ if __name__ == '__main__':
     # The label for showing all players on the server under the count
     # This purely INITIALIZES it does not inherently update automatically
     # if False:  # pylint: disable=using-constant-test
-    try:
-        crew_list = Label(f"{smr.crew_data.crew_str}", x=SOT_WINDOW_W * 0.02,
-            y=(SOT_WINDOW_H-25) * 0.9, batch=smr.main_batch, width=300,
-            multiline=True, font_name ='Times New Roman', font_size=10, bold=False, color=(255, 255, 255, 255)) #{smr.crew_data.crew_color}
-    except:
-        print("crewlist failed")
+    #try:
+        #crew_list = pyglet.text.HTMLLabel(f"{smr.crew_data.crew_str}", x=SOT_WINDOW_W * 0.02,
+        #    y=(SOT_WINDOW_H-25) * 0.9, batch=smr.main_batch, width=300,
+        #    multiline=True) #{smr.crew_data.crew_color}
+    #except:
+    #    print("crewlist failed")
     # Runs our application and starts to use our scheduled events to show data
     pyglet.app.run()
     # Note - ***Nothing past here will execute as app.run() is a loop***

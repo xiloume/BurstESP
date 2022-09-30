@@ -5,9 +5,10 @@
 
 from helpers import *
 import struct
-from mapping import ships
+import pyglet
 from Modules.display_object import DisplayObject
 from helpers import crew_tracker
+from vlabel import VLabel
 
 
 class Crews(DisplayObject):
@@ -19,7 +20,7 @@ class Crews(DisplayObject):
     # table of color values
     color_tab = [(255, 0, 0, 255), (0, 255, 0, 255), (0, 0, 255, 255), (128, 0, 127, 255), (0, 128, 127, 255)]
 
-    def __init__(self, memory_reader, actor_id, address):
+    def __init__(self, memory_reader, actor_id, address, batch):
         """
         be located at the screen coordinated + our text_offsets from helpers.py
         The function of this class is to collect all of the data about the crews
@@ -43,7 +44,8 @@ class Crews(DisplayObject):
         self.actor_id = actor_id
         self.address = address
         self.crew_color = (255, 0, 0, 255)
-
+        self.batch = batch
+        self.text_render = []
         # Collect and store information about the crews on the server
         self.crew_info = self._get_crews_info()
 
@@ -51,8 +53,13 @@ class Crews(DisplayObject):
         self.total_players = sum(crew['size'] for crew in self.crew_info)
 
         # All of our actual display information & rendering
-        self.crew_str = self._built_text_string()
-
+        #self.crew_str = self._built_text_string()
+        for x in range(len(self.crew_info)):
+            self.text_render.append(self._build_text_render(x))
+            if CONFIG.get("CREWS_ENABLED") == False:
+                self.text_render[x].visible = False
+            else:
+                self.text_render[x].visible = True
         # Used to track if the display object needs to be removed
         self.to_delete = False
 
@@ -67,14 +74,32 @@ class Crews(DisplayObject):
             # We store all of the crews in a tracker dictionary. This allows us
             # to assign each crew a "Short"-ID based on count on the server.
             short_id = crew_tracker.get(self.crew_info[x]['guid'], None)
-            output += f"{self.crew_info[x]['crewlabel']}{short_id}:{self.crew_info[x]['size']} Pirates\n"
+            output += f"<font color=rgba({self.crew_info[x]['color']})>{self.crew_info[x]['crewlabel']}{short_id}:{self.crew_info[x]['size']} Pirates\n</font>"
         return output
+
+    def _build_text_render(self, x) -> Label:
+        """
+        Function to build our actual label which is sent to Pyglet. Sets it to
+        be located at the screen coordinated + our text_offsets from helpers.py
+
+        Assigns the object to our batch & group
+
+        :rtype: Label
+        :return: What text we want displayed next to the ship
+        """
+        short_id = crew_tracker.get(self.crew_info[x]['guid'], None)    
+        return VLabel(f"{self.crew_info[x]['crewlabel']}{short_id}:{self.crew_info[x]['size']} Pirates\n",
+                x=SOT_WINDOW_W * 0.02,
+                y=(SOT_WINDOW_H-150) * 0.9 + x*15,
+                batch=self.batch, width=300,
+                multiline=True, font_name ='Times New Roman', font_size=10, bold=True, color=self.crew_info[x]['color'])
+
     #return a different color for a crew
     def _get_color(self, len, color):
         """
         Returns the color for the crew
         """
-        print(color)
+        #print(color)
         if self.color_tab[len] != color:
                 self.crew_color = self.color_tab[len]
         return self.crew_color
@@ -93,7 +118,7 @@ class Crews(DisplayObject):
             # add functionality around Crews on your own
             crew_guid_raw = self.rm.read_bytes(crews[0] + (OFFSETS.get('Crew.Size') * x), 16)
             crew_guid = struct.unpack("<iiii", crew_guid_raw)
-
+            #print(crew_guid)
             # Read the TArray of Players on the the specific Crew, used to determine
             # Crew size
             crew_raw = self.rm.read_bytes(
@@ -114,12 +139,12 @@ class Crews(DisplayObject):
                 crewlabel = "brig   "
             else:
                 crewlabel = "galion"
-            #print(crew_guid[0], crewlabel)
             # If our crew has more than 0 people on it, we care about it, so we add it to our tracker
             color = self._get_color(x, self.crew_color)
             if crew[1] > 0:
                 crew_data = {
                     "guid": crew_guid,
+                    "player": crew[0],
                     "size": crew[1],
                     "crewlabel": crewlabel,
                     "color": color
@@ -130,7 +155,7 @@ class Crews(DisplayObject):
                     crew_tracker[crew_guid] = len(crew_tracker)+1
         return crews_data
 
-    def update(self, my_coords):
+    def update(self):
         """
         A generic method to update all the interesting data about the
         crews on our server. To be called when seeking to perform an update on
@@ -140,8 +165,19 @@ class Crews(DisplayObject):
         2. Pull the latest crew information
         3. Update our strings accordingly
         """
+        print("debug")
+
         if self._get_actor_id(self.address) != self.actor_id:
-            self.to_delete = True
+            self.to_delete = False
             return
         self.crew_info = self._get_crews_info()
-        self.crew_str = self._built_text_string()
+        try:
+            for x in range(len(self.crew_info)):
+                print(x ,self.text_render[x].visible)
+                if CONFIG.get("CREWS_ENABLED") == False:
+                    self.text_render[x].visible = False
+                #if CONFIG.get("CREWS_ENABLED") == True:
+                #    self.text_render[x].visible = True
+                print(x ,self.text_render[x].visible)
+        except Exception as err:
+            print(err)

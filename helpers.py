@@ -6,6 +6,8 @@
 import math
 import json
 import logging
+import os
+import sys
 import win32gui
 import base64
 from pyglet.graphics import Batch
@@ -15,7 +17,9 @@ from pyglet.text import Label
 CONFIG = {
     "CREWS_ENABLED": True,
     "SHIPS_ENABLED": True,
-    "WORLDEVENT_ENABLED": True
+    "WORLDEVENT_ENABLED": True,
+    "CHEST_ENABLED": True,
+    "PLAYER_ENABLED": True
 }
 
 # Used to track unique crews
@@ -24,7 +28,7 @@ crew_tracker = {}
 version = "1.0.0"
 
 # Config specification for logging file
-logging.basicConfig(filename='DougsESP.log', level=logging.DEBUG,
+logging.basicConfig(filename='BurstESP.log', level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s', filemode="w")
 logger = logging.getLogger()
 
@@ -47,8 +51,13 @@ except Exception as e:
 # as a piece of paper, so we save render cost because its 2D
 main_batch = Batch()
 
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+    
 # Load our offset json file
-with open("offsets.json") as infile:
+with open(resource_path("offsets.json")) as infile:
     OFFSETS = json.load(infile)
 
 
@@ -92,7 +101,6 @@ def object_to_screen(player: dict, actor: dict) -> tuple:
         player_camera = (player.get("cam_x"), player.get("cam_y"),
                          player.get("cam_z"))
         temp = make_v_matrix(player_camera)
-
         v_axis_x = (temp[0][0], temp[0][1], temp[0][2])
         v_axis_y = (temp[1][0], temp[1][1], temp[1][2])
         v_axis_z = (temp[2][0], temp[2][1], temp[2][2])
@@ -103,7 +111,6 @@ def object_to_screen(player: dict, actor: dict) -> tuple:
         v_transformed = [dot(v_delta, v_axis_y),
                          dot(v_delta, v_axis_z),
                          dot(v_delta, v_axis_x)]
-
         if v_transformed[2] < 1.0:
             v_transformed[2] = 1.0
 
@@ -113,16 +120,12 @@ def object_to_screen(player: dict, actor: dict) -> tuple:
 
         tmp_fov = math.tan(fov * math.pi / 360)
 
-        x = screen_center_x + v_transformed[0] * (screen_center_x / tmp_fov) \
-            / v_transformed[2]
+        x = screen_center_x + v_transformed[0] * (screen_center_x / tmp_fov) / v_transformed[2]
         if x > SOT_WINDOW_W or x < 0:
             return False
-        y = screen_center_y - v_transformed[1] * \
-            (screen_center_x / tmp_fov) \
-            / v_transformed[2]
+        y = screen_center_y - v_transformed[1] * (screen_center_x / tmp_fov) / v_transformed[2]
         if y > SOT_WINDOW_H or y < 0:
             return False
-
         return int(x), int(SOT_WINDOW_H - y)
     except Exception as w2s_error:
         logger.error(f"Couldn't generate screen coordinates for entity: {w2s_error}")
@@ -181,8 +184,3 @@ def calculate_distance(obj_to: dict, obj_from: dict) -> int:
     return int(math.sqrt((obj_to.get("x") - obj_from.get("x")) ** 2 +
                          (obj_to.get("y") - obj_from.get("y")) ** 2 +
                          (obj_to.get("z") - obj_from.get("z")) ** 2))
-
-
-b_label = Label(base64.b64decode('RG91Z1RoZURydWlkJ3MgRVNQIEZyYW1ld29yaw==').decode("utf-8"),
-                x=SOT_WINDOW_W - 537, y=10, font_size=24, bold=True,
-                color=(127, 127, 127, 65), batch=main_batch)
